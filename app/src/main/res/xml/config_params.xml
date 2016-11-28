@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<defaultsMap>
+    <entry>
+        <key>promo_enabled</key>
+        <value>false</value>
+    </entry>
+    <entry>
+        <key>promo_message</key>
+        <value>imgDefault|Happy Independence Day!!|Heavy discount for App at Independence Day sale!|30% discount! Now App only for  ₹0.99</value>
+    </entry>
+</defaultsMap>

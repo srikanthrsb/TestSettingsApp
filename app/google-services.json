@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "313307880885",
+    "firebase_url": "https://fbtuts-a4411.firebaseio.com",
+    "project_id": "fbtuts-a4411",
+    "storage_bucket": "fbtuts-a4411.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:313307880885:android:f9ec4f6ea432d402",
+        "android_client_info": {
+          "package_name": "srikanthtuts.testsettingsapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "313307880885-3hs891kc6lkalnbjjarpeg280n2grtit.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "srikanthtuts.testsettingsapp",
+            "certificate_hash": "6590C09FD9CD3E5EA7C0E30825803DEFE4114110"
+          }
+        },
+        {
+          "client_id": "313307880885-gj8ofv6bvuht9cklarifjgm4ekp4nvvd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAglt0en_5Ggjh7U_V4mgmCBlSTw59GYNs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "313307880885-gj8ofv6bvuht9cklarifjgm4ekp4nvvd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
