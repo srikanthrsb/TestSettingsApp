@@ -200,13 +200,30 @@
     </LinearLayout>
 
 
+    <TextView
+        android:id="@+id/tvMo"
+        android:layout_width="30dp"
+        android:layout_height="20dp"
+        android:layout_below="@+id/tvDetails"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"
+        android:background="@drawable/day_select"
+        android:gravity="center_vertical"
+        android:text="Mo"
+        android:textAlignment="center"
+        android:textColor="#FFF"
+        android:textSize="12sp" />
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingTop="90dp"
         android:layout_marginLeft="50dp"
-        >
+        android:id="@+id/linearLayout"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true">
 
 
         <TextView
@@ -306,68 +323,89 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/btnPromo"
-        android:layout_width="match_parent"
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="50dp"
-        android:text="Promo"
-        android:visibility="visible" />
+        android:text="Save"
+        android:layout_alignBottom="@+id/tvMo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp" />
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/sign_in_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvDetails"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
         android:visibility="visible"
-        tools:visibility="visible" />
-
-    <TextView
-        android:id="@+id/tvDetails"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/cvPromo"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="130dp"
-        android:text="User Details"
-        android:textAlignment="center"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-
-    <TextView
-        android:id="@+id/tvMo"
-        android:layout_width="30dp"
-        android:layout_height="20dp"
-        android:layout_below="@+id/tvDetails"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
-        android:background="@drawable/day_select"
-        android:gravity="center_vertical"
-        android:text="Mo"
-        android:textAlignment="center"
-        android:textColor="#FFF"
-        android:textSize="12sp" />
-
-
-    <Button
-        android:id="@+id/btnSave"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/btnBuy"
-        android:layout_toStartOf="@+id/sign_in_button"
-        android:text="Save" />
+        tools:visibility="visible"
+        android:layout_alignTop="@+id/btnSave"
+        android:layout_alignStart="@+id/linearLayout" />
 
     <Button
         android:id="@+id/btnBuy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/sign_in_button"
-        android:layout_marginTop="63dp"
-        android:layout_toEndOf="@+id/sign_in_button"
-        android:text="Buy Now" />
+        android:text="Buy Now"
+        android:layout_alignBaseline="@+id/btnSave"
+        android:layout_alignBottom="@+id/btnSave"
+        android:layout_alignEnd="@+id/linearLayout"
+        android:layout_marginEnd="13dp" />
+
+    <TextView
+        android:id="@+id/tvDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="42dp"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+        android:text="@string/user_details"
+        android:textAlignment="center"
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:text="@string/date_only"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnSave"
+        android:layout_toStartOf="@+id/tvMo"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="38dp"
+        android:id="@+id/btnDate" />
+
+    <Button
+        android:text="@string/time_only"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/btnDate"
+        android:layout_toEndOf="@+id/tvMo"
+        android:layout_marginStart="12dp"
+        android:id="@+id/btnTime" />
+
+    <TextView
+        android:text="From Time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/tvToTime"
+        android:layout_alignStart="@+id/btnDate"
+        android:id="@+id/tvFromTime" />
+
+    <TextView
+        android:text="To Time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:id="@+id/tvToTime"
+        android:layout_below="@+id/btnTime"
+        android:layout_toEndOf="@+id/btnSave" />
+
+    <Button
+        android:id="@+id/btnPromo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Promo"
+        android:visibility="visible"
+        android:layout_marginTop="140dp"
+        android:layout_below="@+id/tvFromTime"
+        android:layout_alignParentStart="true" />
 
 
 </RelativeLayout>

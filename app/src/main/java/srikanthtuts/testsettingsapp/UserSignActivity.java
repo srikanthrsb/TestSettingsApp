@@ -18,6 +18,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fastaccess.datetimepicker.TimePickerFragmentDialog;
+import com.fastaccess.datetimepicker.callback.TimePickerCallback;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -27,6 +29,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.server.converter.StringToIntConverter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -35,14 +38,19 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
-public class UserSignActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, View.OnClickListener {
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class UserSignActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, View.OnClickListener, TimePickerCallback {
 
     private GoogleApiClient mGoogleApiClient;
     private static final int RC_SIGN_IN = 9001;
-    TextView tvDetails, tvPromoTitle, tvPromoSubTitle, tvPromoMessage;
+    TextView tvDetails, tvPromoTitle, tvPromoSubTitle, tvPromoMessage, tvFromTime, tvToTime;
     ImageView imgPromo;
     CardView cvPromo;
     private ProgressDialog mProgressDialog;
@@ -58,6 +66,14 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
     private FirebaseAnalytics mFBAnalytics;
     private FirebaseRemoteConfig mFBConfig;
 
+    private FirebaseUser mFirebaseUser;
+    //private FirebaseDatabase mDatabase;
+    private DatabaseReference mDatabase;
+    Customers customers;
+
+    Button btnDate, btnTime;
+    String timeType = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +83,9 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
 
         tvDetails = (TextView) findViewById(R.id.tvDetails);
         findViewById(R.id.sign_in_button).setOnClickListener(this);
+
+        tvFromTime = (TextView) findViewById(R.id.tvFromTime);
+        tvToTime = (TextView) findViewById(R.id.tvToTime);
 
         //Firebase Analytics
         mFBAnalytics = FirebaseAnalytics.getInstance(this);
@@ -83,11 +102,15 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
         mFBConfig.setConfigSettings(configSettings);
         //Set Default Settings
         mFBConfig.setDefaults(R.xml.config_params);
-
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         findViewById(R.id.btnSave).setOnClickListener(this);
         findViewById(R.id.btnBuy).setOnClickListener(this);
 
+        findViewById(R.id.btnDate).setOnClickListener(this);
+        findViewById(R.id.btnTime).setOnClickListener(this);
+
+        customers = new Customers();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.webClientID))
@@ -106,6 +129,7 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
 
         //Firebase
         mFBAuth = FirebaseAuth.getInstance();
+
         mFBAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -113,6 +137,7 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
                 if (fbUser != null) {
                     // User is signed in
                     Log.d("FB", "onAuthStateChanged:signed_in:" + fbUser.getUid());
+
                 } else {
                     // User is signed out
                     Log.d("FB", "onAuthStateChanged:signed_out");
@@ -159,6 +184,7 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
 
         Button btn = (Button) findViewById(R.id.btnPromo);
         btn.setVisibility(showBtn ? View.VISIBLE : View.INVISIBLE);
+        findViewById(R.id.btnPromo).setOnClickListener(this);
         btn.setText(htmlAsSpanned);
         tvDetails.setText(htmlAsSpanned);
     }
@@ -190,11 +216,11 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
                 imgPromo.setImageResource(R.drawable.balloons_64);
             } else if (msgs[0].equalsIgnoreCase("diwali")) {
                 imgPromo.setImageResource(R.drawable.ic_rocket_40_4);
-            }else if (msgs[0].equalsIgnoreCase("newyear")) {
+            } else if (msgs[0].equalsIgnoreCase("newyear")) {
                 imgPromo.setImageResource(R.drawable.balloons_32);
-            }else if (msgs[0].equalsIgnoreCase("christmas")) {
+            } else if (msgs[0].equalsIgnoreCase("christmas")) {
                 imgPromo.setImageResource(R.drawable.ic_christmas_tree_40_4);
-            }else if (msgs[0].equalsIgnoreCase("kite")) {
+            } else if (msgs[0].equalsIgnoreCase("kite")) {
                 imgPromo.setImageResource(R.drawable.ic_kite_40_4);
             }
 
@@ -274,6 +300,11 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
         if (result.isSuccess()) {
             GoogleSignInAccount account = result.getSignInAccount();
             tvDetails.setText(account.getDisplayName() + ", " + account.getEmail());
+            customers.setUserid(account.getId());
+            customers.setPassword(account.getEmail());
+            customers.setCxname(account.getDisplayName());
+            customers.setAddress(account.getPhotoUrl().toString());
+            customers.setPhone(account.getIdToken());
             firebaseAuthWithGoogle(account);
         }
     }
@@ -286,6 +317,7 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d("FBTuts", "signInWithCredential:onComplete:" + task.isSuccessful());
+
 
                 if (!task.isSuccessful()) {
                     Log.d("FBTuts", "signInWithCredential:Failed:" + task.getException());
@@ -311,17 +343,32 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
             case R.id.btnSave:
                 btnName = "Save Click";
                 //sendAnalytics();
+                saveData();
                 break;
             case R.id.btnBuy:
                 btnName = "Buy Click";
                 Bundle buyParams = new Bundle();
                 params.putString(FirebaseAnalytics.Param.ITEM_ID, "Flash Sale");
                 mFBAnalytics.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, buyParams);
-
-
+            case R.id.btnPromo:
+                saveData();
+                break;
+            case R.id.btnTime:
+                TimePickerFragmentDialog.newInstance(true).show(getSupportFragmentManager(), "ToTime");
+                timeType = "ToTime";
+                break;
+            case R.id.btnDate:
+                TimePickerFragmentDialog.newInstance(true).show(getSupportFragmentManager(), "FromTime");
+                timeType = "FromTime";
+                break;
         }
 
         mFBAnalytics.logEvent(btnName, params);
+    }
+
+    private void saveData() {
+        Toast.makeText(getApplicationContext(), "User : " + customers.getUserid(), Toast.LENGTH_LONG).show();
+        mDatabase.child("users").child(customers.getUserid()).setValue(customers);
     }
 
     @Override
@@ -350,6 +397,21 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     public void onConnectionSuspended(int i) {
 
+    }
+
+    @Override
+    public void onTimeSet(long timeOnly, long dateWithTime) {
+        //Toast.makeText(UserSignActivity.this, "Time :  " + String.valueOf(timeOnly), Toast.LENGTH_LONG).show();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        Date dt = new Date(timeOnly);
+        String val = sdf.format(dt);
+        if (timeType.equals("ToTime")) {
+            //tvToTime.setText(String.valueOf(timeOnly));
+            tvToTime.setText(val);
+        } else if (timeType.equals("FromTime")) {
+            //tvFromTime.setText(String.valueOf(timeOnly));
+            tvFromTime.setText(val);
+        }
     }
 
 

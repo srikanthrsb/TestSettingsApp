@@ -111,6 +111,9 @@
     <string name="loading">Loading…</string>
     <string name="auth_code_fmt">Auth Code: %s</string>
     <string name="id_token_fmt">ID Token: %s</string>
+    <string name="user_details">User Details</string>
+    <string name="date_only">Date</string>
+    <string name="time_only">Time</string>
 
 
 </resources>
