@@ -1,11 +1,18 @@
 package srikanthtuts.testsettingsapp;
 
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -20,6 +27,9 @@ import android.widget.Toast;
 
 import com.fastaccess.datetimepicker.TimePickerFragmentDialog;
 import com.fastaccess.datetimepicker.callback.TimePickerCallback;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -44,6 +54,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class UserSignActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, View.OnClickListener, TimePickerCallback {
@@ -117,10 +128,12 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
                 .requestEmail()
                 .build();
 
+        // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+                .addApi(AppIndex.API).build();
 
         SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_STANDARD);
@@ -213,13 +226,13 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
             cvPromo.setVisibility(showCard ? View.VISIBLE : View.INVISIBLE);
 
             if (msgs[0].equalsIgnoreCase("default")) {
-                imgPromo.setImageResource(R.drawable.balloons_64);
+                imgPromo.setImageResource(R.drawable.ic_balloons);
             } else if (msgs[0].equalsIgnoreCase("diwali")) {
-                imgPromo.setImageResource(R.drawable.ic_rocket_40_4);
+                imgPromo.setImageResource(R.drawable.ic_fireworks);
             } else if (msgs[0].equalsIgnoreCase("newyear")) {
-                imgPromo.setImageResource(R.drawable.balloons_32);
+                imgPromo.setImageResource(R.drawable.ic_balloons);
             } else if (msgs[0].equalsIgnoreCase("christmas")) {
-                imgPromo.setImageResource(R.drawable.ic_christmas_tree_40_4);
+                imgPromo.setImageResource(R.drawable.ic_sale); //ic_christmas_tree_40_4
             } else if (msgs[0].equalsIgnoreCase("kite")) {
                 imgPromo.setImageResource(R.drawable.ic_kite_40_4);
             }
@@ -234,7 +247,9 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
 
     @Override
     protected void onStart() {
-        super.onStart();
+        super.onStart();// ATTENTION: This was auto-generated to implement the App Indexing API.
+// See https://g.co/AppIndexing/AndroidStudio for more information.
+        mGoogleApiClient.connect();
         mFBAuth.addAuthStateListener(mFBAuthListener);
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
@@ -251,14 +266,22 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
                 }
             });
         }
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.start(mGoogleApiClient, getIndexApiAction());
     }
 
     @Override
     protected void onStop() {
-        super.onStop();
+        super.onStop();// ATTENTION: This was auto-generated to implement the App Indexing API.
+// See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(mGoogleApiClient, getIndexApiAction());
         if (mFBAuthListener != null) {
             mFBAuth.removeAuthStateListener(mFBAuthListener);
         }
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        mGoogleApiClient.disconnect();
     }
 
     private void showProgressDialog() {
@@ -350,12 +373,14 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
                 Bundle buyParams = new Bundle();
                 params.putString(FirebaseAnalytics.Param.ITEM_ID, "Flash Sale");
                 mFBAnalytics.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, buyParams);
+                addToCalendar();
             case R.id.btnPromo:
-                saveData();
+                //saveData();
+                addToCalendar();
                 break;
             case R.id.btnTime:
-                TimePickerFragmentDialog.newInstance(true).show(getSupportFragmentManager(), "ToTime");
-                timeType = "ToTime";
+                /*TimePickerFragmentDialog.newInstance(true).show(getSupportFragmentManager(), "ToTime");
+                timeType = "ToTime";*/
                 break;
             case R.id.btnDate:
                 TimePickerFragmentDialog.newInstance(true).show(getSupportFragmentManager(), "FromTime");
@@ -364,6 +389,37 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
         }
 
         mFBAnalytics.logEvent(btnName, params);
+    }
+
+    public void addToCalendar(){
+        long calID = 1;
+        long startMillis = 0;
+        long endMillis = 0;
+        Calendar beginTime = Calendar.getInstance();
+        beginTime.set(2016,12,13);
+        //beginTime.set(2012, 9, 14, 7, 30);
+        startMillis = beginTime.getTimeInMillis();
+        Calendar endTime = Calendar.getInstance();
+        //endTime.set(2012, 9, 14, 8, 45);
+        beginTime.set(2016,12,13);
+        endMillis = endTime.getTimeInMillis();
+
+        ContentResolver cr = getContentResolver();
+        ContentValues values = new ContentValues();
+        values.put(CalendarContract.Events.DTSTART, startMillis);
+        values.put(CalendarContract.Events.DTEND, endMillis);
+        values.put(CalendarContract.Events.TITLE, "Task 1.2");
+        values.put(CalendarContract.Events.DESCRIPTION, "This is 1.2 task");
+        values.put(CalendarContract.Events.CALENDAR_ID, calID);
+        //values.put(CalendarContract.Events.EVENT_TIMEZONE, "America/Los_Angeles");
+        if ( ContextCompat.checkSelfPermission( this, android.Manifest.permission.WRITE_CALENDAR )
+                == PackageManager.PERMISSION_GRANTED ) {
+            Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+            // get the event ID that is the last element in the Uri
+            long eventID = Long.parseLong(uri.getLastPathSegment());
+        }
+
+
     }
 
     private void saveData() {
@@ -415,4 +471,19 @@ public class UserSignActivity extends AppCompatActivity implements GoogleApiClie
     }
 
 
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("UserSign Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
+    }
 }
